@@ -55,6 +55,8 @@ def main(argv):
     elif opt in ("-o", "--dayOffset"):
       dayOffset = int(arg)
 
+  start = dayOffset + dayOfYear * 24 * 3600
+
   # GET TEST INFORMATION
   # --------------------
   print('\nSIMULATION SETUP INFORMATION\n---------------------')
@@ -64,7 +66,7 @@ def main(argv):
   # Inputs available
   inputs = requests.get('{0}/inputs'.format(url)).json()
   # print('Control Inputs:\t\t\t{0}'.format(inputs))
-  inputFileName = "controlInputsList.csv"
+  inputFileName = "controlInputsList_{}_{}s.csv".format(start, fmuStep)
   if os.path.exists(inputFileName):
     os.remove(inputFileName)
     with open(inputFileName, "w", newline = "") as outFile:
@@ -79,7 +81,7 @@ def main(argv):
   # Measurements available
   measurements = requests.get('{0}/measurements'.format(url)).json()
   # print('Measurements:\t\t\t{0}'.format(sorted(measurements)))
-  measFileName = "measurementsList.csv"
+  measFileName = "measurementsList_{}_{}s.csv".format(start, fmuStep)
   if os.path.exists(measFileName):
     os.remove(measFileName)
     with open(measFileName, "w", newline = "") as outFile:
@@ -91,7 +93,7 @@ def main(argv):
       writer = csv.writer(outFile)
       for line in measurements:
         writer.writerow([line])
-  outFileName = "results.csv"
+  outFileName = "results_{}_{}s.csv".format(start, fmuStep)
   if os.path.exists(outFileName):
     os.remove(outFileName)
     outFile = open(outFileName, "w", newline = "")
@@ -110,7 +112,7 @@ def main(argv):
   # -------------
   # Reset simulation
   print('Resetting simulation to start in a certain day of year at a certain time in seconds.')
-  res = requests.put('{0}/reset'.format(url), data = {'start': dayOffset + dayOfYear * 24 * 3600})
+  res = requests.put('{0}/reset'.format(url), data = {'start': start})
   # Set simulation step
   print('Setting simulation step to {0}.'.format(fmuStep))
   res = requests.put('{0}/step'.format(url), data = {'step': fmuStep})
